@@ -21,10 +21,10 @@ return new class extends Migration
                 ->constrained('users')
                 ->onDelete('cascade');
             $table
-                ->foreignId('group_id')
+                ->foreignId('chat_id')
                 ->nullable(false)
                 ->unique()
-                ->constrained('groups')
+                ->constrained('chats')
                 ->onDelete('cascade');
             $table->timestamps();
         });

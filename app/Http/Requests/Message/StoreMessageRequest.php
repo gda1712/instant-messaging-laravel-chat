@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Group;
+namespace App\Http\Requests\Message;
 
 use App\Http\Requests\BaseRequest;
 
-class StoreGroupRequest extends BaseRequest
+class StoreMessageRequest extends BaseRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,8 +22,9 @@ class StoreGroupRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'users' => 'required|array'
+            'message' => 'required|string',
+            'chat_id' => 'required|integer|exists:chats,id',
+            'user_id' => 'required|integer|exists:users,id',
         ];
     }
 }

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
-use App\Models\Group;
+use App\Models\Chat;
 
 class Message extends Model
 {
@@ -13,7 +13,7 @@ class Message extends Model
 
     protected $fillable = [
         'user_id',
-        'group_id',
+        'chat_id',
         'message',
     ];
 
@@ -22,8 +22,8 @@ class Message extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function group()
+    public function chat()
     {
-        return $this->belongsTo(Group::class);
+        return $this->belongsTo(Chat::class);
     }
 }

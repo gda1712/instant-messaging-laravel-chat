@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Message;
 
-class Group extends Model
+class Chat extends Model
 {
     use HasFactory;
 
@@ -22,5 +22,10 @@ class Group extends Model
     public function users()
     {
         return $this->belongsToMany(User::class);
+    }
+
+    public function hasUser($user_id)
+    {
+        return $this->users->contains($user_id);
     }
 }

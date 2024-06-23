@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\GroupController;
+use App\Http\Controllers\ChatController;
 
 Route::group([
     'prefix' => '/auth',
@@ -16,13 +16,9 @@ Route::group([
     'prefix' => '/chat',
     'middleware' => 'auth:sanctum',
 ], function() {
-    Route::group([
-        'prefix' => '/group',
-    ], function() {
-        Route::post('/', [GroupController::class, 'store']);
-        Route::get('/', [GroupController::class, 'index']);
-        Route::delete('/{id}', [GroupController::class, 'destroy']);
-    });
+    Route::post('/', [ChatController::class, 'store']);
+    Route::get('/', [ChatController::class, 'index']);
+    Route::delete('/{id}', [ChatController::class, 'destroy']);
 });
 
 Route::get('/user', function (Request $request) {
