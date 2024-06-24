@@ -51,6 +51,8 @@ class MessageController extends BaseController
     {
         $validated = $request->validated();
         $chatId = $validated['chat_id'] ?? null;
+        $search = $validated['search'] ?? null;
+
         try {
             if($chatId) {
                 // verify that the user is part of the chat
@@ -72,6 +74,10 @@ class MessageController extends BaseController
                         $query->where('user_id', auth()->user()->id);
                     });
                 });
+            }
+
+            if($search) {
+                $query->where('message', 'like', "%$search%");
             }
 
             $appUrl = env('APP_URL');

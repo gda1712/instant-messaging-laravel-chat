@@ -22,7 +22,8 @@ class IndexMessagesRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'chat_id' => 'sometimes|exists:chats,id'
+            'chat_id' => 'sometimes|exists:chats,id',
+            'search' => 'sometimes|string'
         ];
     }
 }
