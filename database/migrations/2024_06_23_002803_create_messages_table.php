@@ -17,13 +17,11 @@ return new class extends Migration
             $table
                 ->foreignId('user_id')
                 ->nullable(false)
-                ->unique()
                 ->constrained('users')
                 ->onDelete('cascade');
             $table
                 ->foreignId('chat_id')
                 ->nullable(false)
-                ->unique()
                 ->constrained('chats')
                 ->onDelete('cascade');
             $table->timestamps();

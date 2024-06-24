@@ -38,8 +38,6 @@ class ChatCreated implements ShouldBroadcast
         foreach ($this->chat->users as $user) {
             array_push($channels, new PrivateChannel('users.' . $user->id));
         }
-
         return $channels;
     }
-
 }

@@ -12,6 +12,7 @@ class Chat extends Model
 
     protected $fillable = [
         'name',
+        'is_group_chat'
     ];
 
     public function messages()

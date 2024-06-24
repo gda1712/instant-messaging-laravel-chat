@@ -22,7 +22,8 @@ class StoreChatRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
+            'is_group_chat' => 'required|boolean',
+            'name' => 'required_if:is_group_chat,true|string',
             'users' => 'required|array'
         ];
     }

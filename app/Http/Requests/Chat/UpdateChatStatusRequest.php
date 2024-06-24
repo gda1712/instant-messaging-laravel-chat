@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Message;
+namespace App\Http\Requests\Chat;
 
 use App\Http\Requests\BaseRequest;
 
-class StoreMessageRequest extends BaseRequest
+class updateChatStatusRequest extends BaseRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,8 +22,7 @@ class StoreMessageRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'message' => 'required|string',
-            'chat_id' => 'required|integer|exists:chats,id',
+            'status' => 'required|string|in:active,blocked'
         ];
     }
 }
