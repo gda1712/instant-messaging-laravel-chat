@@ -25,6 +25,7 @@ Route::group([
     // Messages
     Route::get('/messages', [MessageController::class, 'index']);
     Route::post('/message', [MessageController::class, 'store']);
+    Route::get('/file/{messageId}', [MessageController::class, 'downloadFile']);
 });
 
 Route::get('/user', function (Request $request) {

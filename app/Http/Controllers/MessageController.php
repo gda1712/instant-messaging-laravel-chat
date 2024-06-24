@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Chat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Message\StoreMessageRequest;
 use App\Http\Requests\Message\IndexMessagesRequest;
 use App\Models\Message;
@@ -22,6 +24,19 @@ class MessageController extends BaseController
             })->first();
             if (!$chat) {
                 return $this->sendError('Error', ['error' => 'You are not part of this chat'], 403);
+            }
+
+            // save file in 'chat' disk
+            if ($request->hasFile('file')) {
+                $uploadedFile = $request->file('file');
+                $timestampedFilename = time() . $uploadedFile->getClientOriginalName();
+                $subfolder = 'chat/' . $validated['chat_id'];
+                $filePath = Storage::disk('chat')->putFileAs(
+                    $subfolder,
+                    $uploadedFile,
+                    $timestampedFilename
+                );
+                $validated['file'] = $filePath;
             }
 
             $message = Message::create($validated);
@@ -58,10 +73,47 @@ class MessageController extends BaseController
                     });
                 });
             }
+
+            $appUrl = env('APP_URL');
+
+            $query->select(
+                'id',
+                'chat_id',
+                'user_id',
+                'message',
+                'created_at',
+                DB::raw("IF(file IS NOT NULL, CONCAT('$appUrl/api/chat/file/', id), NULL) as file_url")
+            );
+
             $messages = $query->with('user')->get();
             return $this->sendResponse($messages, 'Messages retrieved successfully.');
         } catch (\Exception $e) {
             return $this->sendError('Error', ['error' => $e->getMessage()], 500);
         }
+    }
+
+    // Download file in message
+    public function downloadFile(Request $request, $id)
+    {
+        $message = Message::find($id);
+
+        if (!$message) {
+            return $this->sendError('Error', ['error' => 'Message not found'], 404);
+        }
+
+        $message->load('chat.users');
+
+        // check if the user is part of the chat
+        $isPartOfChat = $message->chat->users->contains('id', auth()->user()->id);
+        if (!$isPartOfChat) {
+            return $this->sendError('Error', ['error' => 'You are not part of this chat'], 403);
+        }
+
+        if (!$message->file) {
+            return $this->sendError('Error', ['error' => 'Message does not have a file'], 404);
+        }
+
+        $path = Storage::disk('chat')->path($message->file);
+        return response()->download($path);
     }
 }

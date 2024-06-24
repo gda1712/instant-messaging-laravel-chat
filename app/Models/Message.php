@@ -15,6 +15,7 @@ class Message extends Model
         'user_id',
         'chat_id',
         'message',
+        'file',
     ];
 
     public function user()
