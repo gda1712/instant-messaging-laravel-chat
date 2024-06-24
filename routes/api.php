@@ -23,8 +23,8 @@ Route::group([
     Route::get('/contacts', [ChatController::class, 'getContacts']);
 
     // Messages
-    Route::get('/messages/{chatId}', [MessageController::class, 'indexByChat']);
-    Route::post('/messages', [MessageController::class, 'store']);
+    Route::get('/messages', [MessageController::class, 'index']);
+    Route::post('/message', [MessageController::class, 'store']);
 });
 
 Route::get('/user', function (Request $request) {
