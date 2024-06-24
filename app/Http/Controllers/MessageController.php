@@ -10,6 +10,7 @@ use App\Http\Requests\Message\StoreMessageRequest;
 use App\Http\Requests\Message\IndexMessagesRequest;
 use App\Models\Message;
 use App\Events\NewMessage;
+use App\Services\EncryptionService;
 
 class MessageController extends BaseController
 {
@@ -17,6 +18,8 @@ class MessageController extends BaseController
     {
         $validated = $request->validated();
         $validated['user_id'] = auth()->user()->id;
+        $encryptionService = new EncryptionService();
+
         try {
             // verify that the user is part of the chat
             $chat = Chat::where('id', $validated['chat_id'])->whereHas('users', function ($query) {
@@ -25,6 +28,9 @@ class MessageController extends BaseController
             if (!$chat) {
                 return $this->sendError('Error', ['error' => 'You are not part of this chat'], 403);
             }
+
+            // Decrypt message
+            $validated['message'] = $encryptionService->decrypt($validated['message']);
 
             // save file in 'chat' disk
             if ($request->hasFile('file')) {
@@ -41,6 +47,7 @@ class MessageController extends BaseController
 
             $message = Message::create($validated);
             broadcast(new NewMessage($message))->toOthers();
+            $message->message = $encryptionService->encrypt($message->message, base64_decode(auth()->user()->public_key));
             return $this->sendResponse($message, 'Message created successfully.');
         } catch (\Exception $e) {
             return $this->sendError('Error', ['error' => $e->getMessage()], 500);
@@ -52,6 +59,8 @@ class MessageController extends BaseController
         $validated = $request->validated();
         $chatId = $validated['chat_id'] ?? null;
         $search = $validated['search'] ?? null;
+        $encryptionService = new EncryptionService();
+        $user = auth()->user();
 
         try {
             if($chatId) {
@@ -92,9 +101,17 @@ class MessageController extends BaseController
             );
 
             $messages = $query->with('user')->get();
+
+            $publicUserKey = base64_decode($user->public_key);
+
+            $messages->each(function ($message) use ($encryptionService, $publicUserKey) {
+                $message->message = $encryptionService->encrypt($message->message, $publicUserKey);
+            });
+
+
             return $this->sendResponse($messages, 'Messages retrieved successfully.');
         } catch (\Exception $e) {
-            return $this->sendError('Error', ['error' => $e->getMessage()], 500);
+            return $this->sendError('Error', ['error' => $e->getTrace()], 500);
         }
     }
 
