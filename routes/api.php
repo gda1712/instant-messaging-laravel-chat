@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\UserController;
 
 Route::group([
     'prefix' => '/auth',
@@ -28,6 +29,11 @@ Route::group([
     Route::get('/file/{messageId}', [MessageController::class, 'downloadFile']);
 });
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+
+Route::group([
+    'middleware' => 'auth:sanctum',
+    'prefix' => '/user',
+], function() {
+    Route::get('/', [UserController::class, 'show']);
+    Route::post('/', [UserController::class, 'update']);
+});
