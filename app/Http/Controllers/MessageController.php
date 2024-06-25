@@ -18,7 +18,7 @@ class MessageController extends BaseController
     {
         $validated = $request->validated();
         $validated['user_id'] = auth()->user()->id;
-        $encryptionService = new EncryptionService();
+        $encryptionService = new EncryptionService(auth()->user()->email);
 
         try {
             // verify that the user is part of the chat
@@ -30,7 +30,7 @@ class MessageController extends BaseController
             }
 
             // Decrypt message
-            $validated['message'] = $encryptionService->decrypt($validated['message']);
+            $validated['message'] = $encryptionService->cryptoJsAesDecrypt($validated['message']);
 
             // save file in 'chat' disk
             if ($request->hasFile('file')) {
@@ -47,7 +47,7 @@ class MessageController extends BaseController
 
             $message = Message::create($validated);
             broadcast(new NewMessage($message))->toOthers();
-            $message->message = $encryptionService->encrypt($message->message, base64_decode(auth()->user()->public_key));
+            $message->message = $encryptionService->cryptoJsAesEncrypt($message->message);
             return $this->sendResponse($message, 'Message created successfully.');
         } catch (\Exception $e) {
             return $this->sendError('Error', ['error' => $e->getMessage()], 500);
@@ -59,7 +59,7 @@ class MessageController extends BaseController
         $validated = $request->validated();
         $chatId = $validated['chat_id'] ?? null;
         $search = $validated['search'] ?? null;
-        $encryptionService = new EncryptionService();
+        $encryptionService = new EncryptionService(auth()->user()->email);
         $user = auth()->user();
 
         try {
@@ -102,10 +102,8 @@ class MessageController extends BaseController
 
             $messages = $query->with('user')->get();
 
-            $publicUserKey = base64_decode($user->public_key);
-
-            $messages->each(function ($message) use ($encryptionService, $publicUserKey) {
-                $message->message = $encryptionService->encrypt($message->message, $publicUserKey);
+            $messages->each(function ($message) use ($encryptionService) {
+                $message->message = $encryptionService->cryptoJsAesEncrypt($message->message);
             });
 
 

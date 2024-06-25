@@ -2,85 +2,51 @@
 
 namespace App\Services;
 
-use phpseclib3\Crypt\RSA;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 
 class EncryptionService
 {
 
-    private $publicKey;
-    private $privateKey;
+    private $key;
 
-
-    public function __construct()
+    public function __construct($email)
     {
-        // check if keys exist in storage
-        if (Storage::disk('keys')->has('private.pem') && Storage::disk('keys')->has('public.pem')) {
-            $this->privateKey = Storage::disk('keys')->get('private.pem');
-            $this->publicKey = Storage::disk('keys')->get('public.pem');
-        } else {
-            $keys = $this->generateKeys();
-            // save keys in disk 'keys'
-            Storage::disk('keys')->put('private.pem', $keys['private']);
-            Storage::disk('keys')->put('public.pem', $keys['public']);
+        $this->key = "messaging-$email-key";
+    }
 
-            $this->publicKey = $keys['public'];
-            $this->privateKey = $keys['private'];
+    function cryptoJsAesEncrypt($value){
+        $passphrase = $this->key;
+        $salt = openssl_random_pseudo_bytes(8);
+        $salted = '';
+        $dx = '';
+        while (strlen($salted) < 48) {
+            $dx = md5($dx.$passphrase.$salt, true);
+            $salted .= $dx;
         }
+        $key = substr($salted, 0, 32);
+        $iv  = substr($salted, 32,16);
+        $encrypted_data = openssl_encrypt(json_encode($value), 'aes-256-cbc', $key, true, $iv);
+        $data = array("ct" => base64_encode($encrypted_data), "iv" => bin2hex($iv), "s" => bin2hex($salt));
+        return json_encode($data);
     }
 
-    /**
-     * Generate encryption keys
-     * @return array
-     */
-    private function generateKeys() {
-        $private = RSA::createKey();
-        $public = $private->getPublicKey();
-
-        // save keys in storage, in keys disk
-        $privateKey = $private->toString('PKCS1');
-        $publicKey = $public->toString('PKCS8');
-
-        return [
-            'private' => $privateKey,
-            'public' => $publicKey
-        ];
-    }
-
-    /**
-    * Get Public Key
-    * @return string
-     */
-    public function getPublicKey() {
-        return $this->publicKey;
-    }
-
-    /**
-     * Encrypt String, this returns the message encrypted and in base64
-     * $publicKey should be in base64
-     * @param string $data
-     * @param string $publicKey
-     * @return string
-     */
-    public function encrypt($data, $publicKey)
-    {
-        openssl_public_encrypt($data, $encryptedData, $publicKey);
-        return base64_encode($encryptedData);
-    }
-
-    public function decrypt($data) {
-        openssl_private_decrypt(base64_decode($data), $decryptedData, $this->privateKey);
-        return $decryptedData;
-    }
-
-    public function verifyPublicKey($publicKey) {
-        try {
-            $key = RSA::loadPublicKey($publicKey);
-            return true;
-        } catch (NoKeyLoadedException $e) {
-            return false;
-        } catch (\Exception $e) {
-            return false;
+    function cryptoJsAesDecrypt($jsonString){
+        $passphrase = $this->key;
+        $jsondata = json_decode($jsonString, true);
+        $salt = hex2bin($jsondata["s"]);
+        $ct = base64_decode($jsondata["ct"]);
+        $iv  = hex2bin($jsondata["iv"]);
+        $concatedPassphrase = $passphrase.$salt;
+        $md5 = array();
+        $md5[0] = md5($concatedPassphrase, true);
+        $result = $md5[0];
+        for ($i = 1; $i < 3; $i++) {
+            $md5[$i] = md5($md5[$i - 1].$concatedPassphrase, true);
+            $result .= $md5[$i];
         }
+        $key = substr($result, 0, 32);
+        $data = openssl_decrypt($ct, 'aes-256-cbc', $key, true, $iv);
+        return json_decode($data, true);
     }
 }
