@@ -37,7 +37,6 @@ class ChatCreated implements ShouldBroadcast
         $channels = [];
 
         foreach ($this->chat->users as $user) {
-            Log::log('info', 'user id: ' . $user->id);
             array_push($channels, new Channel('user.' . $user->id));
         }
         return $channels;

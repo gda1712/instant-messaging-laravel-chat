@@ -30,7 +30,7 @@ class MessageController extends BaseController
             }
 
             // Decrypt message
-            $validated['message'] = $encryptionService->cryptoJsAesDecrypt($validated['message']);
+            $validated['message'] = $encryptionService->cryptoJsAesDecrypt($validated['message'] ?? null);
 
             // save file in 'chat' disk
             if ($request->hasFile('file')) {
@@ -46,7 +46,29 @@ class MessageController extends BaseController
             }
 
             $message = Message::create($validated);
-            broadcast(new NewMessage($message))->toOthers();
+            $message->load('chat.users');
+
+            $appUrl = env('APP_URL');
+            $newMessage = Message::select(
+                'id',
+                'chat_id',
+                'user_id',
+                'message',
+                'type',
+                'created_at',
+                DB::raw("IF(file IS NOT NULL, CONCAT('$appUrl/api/chat/file/', id), NULL) as file_url")
+            )->where('id', $message->id)->with('user')->with('chat')->get();
+            $newMessage = $newMessage[0];
+
+            foreach ($message->chat->users as $user) {
+                //copy message
+                $messageForUser = $newMessage->toArray();
+                $newEncryptionService = new EncryptionService($user->email);
+                $messageForUser['message'] = $newEncryptionService->cryptoJsAesEncrypt($message->message);
+
+                broadcast(new NewMessage($messageForUser, $user))->toOthers();
+            }
+
             $message->message = $encryptionService->cryptoJsAesEncrypt($message->message);
             return $this->sendResponse($message, 'Message created successfully.');
         } catch (\Exception $e) {

@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -20,10 +21,12 @@ class NewMessage implements ShouldBroadcast
      */
 
     public $message;
+    private $user;
 
-    public function __construct(Message $message)
+    public function __construct($message, User $user)
     {
         $this->message = $message;
+        $this->user = $user;
     }
 
     /**
@@ -32,11 +35,11 @@ class NewMessage implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('chats.' . $this->message->chat->id);
+        return [new Channel('chat.' . $this->message['chat']['id'])];
     }
 
     public function broadcastAs()
     {
-        return 'new-message.' . $this->message->chat->id;
+        return 'new-message.' . $this->user->id;
     }
 }

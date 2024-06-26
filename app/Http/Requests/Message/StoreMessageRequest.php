@@ -22,8 +22,8 @@ class StoreMessageRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'message' => 'required|string',
             'file' => 'nullable|file|max:10240',
+            'message' => 'required_unless:file,null|string',
             'chat_id' => 'required|integer|exists:chats,id',
         ];
     }

@@ -16,6 +16,9 @@ class EncryptionService
     }
 
     function cryptoJsAesEncrypt($value){
+        if(empty($value)) {
+            return null;
+        }
         $passphrase = $this->key;
         $salt = openssl_random_pseudo_bytes(8);
         $salted = '';
@@ -32,6 +35,9 @@ class EncryptionService
     }
 
     function cryptoJsAesDecrypt($jsonString){
+        if(empty($jsonString)) {
+            return null;
+        }
         $passphrase = $this->key;
         $jsondata = json_decode($jsonString, true);
         $salt = hex2bin($jsondata["s"]);
