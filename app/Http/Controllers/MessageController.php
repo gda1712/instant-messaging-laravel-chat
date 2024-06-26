@@ -104,6 +104,8 @@ class MessageController extends BaseController
 
             $messages->each(function ($message) use ($encryptionService) {
                 $message->message = $encryptionService->cryptoJsAesEncrypt($message->message);
+                echo ($message->message);
+                dump($encryptionService->cryptoJsAesDecrypt($message->message));
             });
 
 
