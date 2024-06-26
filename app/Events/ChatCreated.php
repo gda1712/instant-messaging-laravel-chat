@@ -10,6 +10,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class ChatCreated implements ShouldBroadcast
 {
@@ -36,8 +37,14 @@ class ChatCreated implements ShouldBroadcast
         $channels = [];
 
         foreach ($this->chat->users as $user) {
-            array_push($channels, new PrivateChannel('users.' . $user->id));
+            Log::log('info', 'user id: ' . $user->id);
+            array_push($channels, new Channel('user.' . $user->id));
         }
         return $channels;
+    }
+
+    public function broadcastAs()
+    {
+        return 'new-chat';
     }
 }

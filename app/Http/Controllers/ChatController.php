@@ -120,19 +120,6 @@ class ChatController extends BaseController
         }
     }
 
-//    public function updateStatus(updateChatStatusRequest $request, $id)
-//    {
-//        $validated = $request->validated();
-//        $status = $validated['status'];
-//
-//        try {
-//            $chat = DB::table('chat_user')->where('chat_id', $id)->where('user_id', auth()->user()->id)->update(['status' => $status]);
-//            return $this->sendResponse([], 'chat updated successfully.');
-//        } catch (\Exception $e) {
-//            return $this->sendError('Error', ['error' => $e->getMessage()], 500);
-//        }
-//    }
-
     public function destroy(Request $request, $id) {
         /* remove user in the chat if chat_type is group chat, if not remove the chat */
         try {
