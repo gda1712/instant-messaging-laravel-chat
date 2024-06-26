@@ -52,7 +52,21 @@ class ChatController extends BaseController
                 'is_group_chat' => $isGroupChat,
             ]);
             $users[] = auth()->user()->id;
+
             $chat->users()->attach($users);
+            $chat->refresh();
+            $chat->load('users');
+            if ($chat->is_group_chat == 0) {
+                // Get user that is not the authenticated user
+                $otherUser = $chat->users->first(function ($user) {
+                    return $user->id !== auth()->user()->id;
+                });
+
+                // Set the chat name to the other user's name
+                if ($otherUser) {
+                    $chat->name = $otherUser->name;
+                }
+            }
             broadcast(new ChatCreated($chat))->toOthers();
             return $this->sendResponse($chat, 'chat created successfully.');
         } catch (\Exception $e) {
