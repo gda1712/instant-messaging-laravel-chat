@@ -18,6 +18,10 @@ class Message extends Model
         'file',
     ];
 
+    protected $casts = [
+        'message' => 'encrypted',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
