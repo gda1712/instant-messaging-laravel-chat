@@ -20,8 +20,9 @@ Route::group([
 ], function() {
     Route::post('/', [ChatController::class, 'store']);
     Route::get('/', [ChatController::class, 'index']);
-    Route::put('/{id}', [ChatController::class, 'updateStatus']);
+//    Route::put('/{id}', [ChatController::class, 'updateStatus']);
     Route::get('/contacts', [ChatController::class, 'getContacts']);
+    Route::delete('/{id}', [ChatController::class, 'destroy']);
 
     // Messages
     Route::get('/messages', [MessageController::class, 'index']);

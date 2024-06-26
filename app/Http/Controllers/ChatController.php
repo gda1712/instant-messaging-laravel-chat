@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BaseController;
@@ -81,7 +82,7 @@ class ChatController extends BaseController
                 $query->select('chat_id')->from('chat_user')->where('user_id', auth()->user()->id);
             })->join('chat_user as cu', 'chats.id', '=', 'cu.chat_id')
                 ->where('cu.user_id', auth()->user()->id)
-                ->select('chats.id', 'chats.name', 'chats.is_group_chat', 'cu.status')
+                ->select('chats.id', 'chats.name', 'chats.is_group_chat')
                 ->get()
                 ->load('users');
 
@@ -119,14 +120,41 @@ class ChatController extends BaseController
         }
     }
 
-    public function updateStatus(updateChatStatusRequest $request, $id)
-    {
-        $validated = $request->validated();
-        $status = $validated['status'];
+//    public function updateStatus(updateChatStatusRequest $request, $id)
+//    {
+//        $validated = $request->validated();
+//        $status = $validated['status'];
+//
+//        try {
+//            $chat = DB::table('chat_user')->where('chat_id', $id)->where('user_id', auth()->user()->id)->update(['status' => $status]);
+//            return $this->sendResponse([], 'chat updated successfully.');
+//        } catch (\Exception $e) {
+//            return $this->sendError('Error', ['error' => $e->getMessage()], 500);
+//        }
+//    }
 
+    public function destroy(Request $request, $id) {
+        /* remove user in the chat if chat_type is group chat, if not remove the chat */
         try {
-            $chat = DB::table('chat_user')->where('chat_id', $id)->where('user_id', auth()->user()->id)->update(['status' => $status]);
-            return $this->sendResponse([], 'chat updated successfully.');
+            $chat = Chat::find($id);
+            if (!$chat) {
+                return $this->sendError('Error', ['error' => 'Chat not found'], 404);
+            }
+
+            if ($chat->is_group_chat) {
+                $chat->users()->detach(auth()->user()->id);
+                // add message that user left the chat
+                Message::create([
+                    'chat_id' => $chat->id,
+                    'user_id' => auth()->user()->id,
+                    'message' => null,
+                    'type' => Message::TYPE_REMOVED_CHAT
+                ]);
+            } else {
+                $chat->delete();
+            }
+
+            return $this->sendResponse([], 'Chat removed successfully.');
         } catch (\Exception $e) {
             return $this->sendError('Error', ['error' => $e->getMessage()], 500);
         }

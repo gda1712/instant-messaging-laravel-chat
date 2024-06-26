@@ -11,11 +11,15 @@ class Message extends Model
 {
     use HasFactory;
 
+    public const TYPE_NORMAL = 'normal';
+    public const TYPE_REMOVED_CHAT = 'removed_chat';
+
     protected $fillable = [
         'user_id',
         'chat_id',
         'message',
         'file',
+        'type'
     ];
 
     protected $casts = [

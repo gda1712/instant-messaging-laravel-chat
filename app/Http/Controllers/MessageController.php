@@ -96,6 +96,7 @@ class MessageController extends BaseController
                 'chat_id',
                 'user_id',
                 'message',
+                'type',
                 'created_at',
                 DB::raw("IF(file IS NOT NULL, CONCAT('$appUrl/api/chat/file/', id), NULL) as file_url")
             );
