@@ -6,7 +6,7 @@ use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BaseController;
-use App\Http\Requests\chat\StorechatRequest;
+use App\Http\Requests\chat\StoreChatRequest;
 use App\Http\Requests\Chat\updateChatStatusRequest;
 use App\Models\Chat;
 use App\Models\User;
@@ -15,7 +15,7 @@ use App\Events\ChatCreated;
 class ChatController extends BaseController
 {
     //
-    public function store(StorechatRequest $request)
+    public function store(StoreChatRequest $request)
     {
         $validated = $request->validated();
         $isGroupChat = $validated['is_group_chat'];
