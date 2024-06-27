@@ -12,7 +12,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class ChatCreated implements ShouldBroadcast
+class ChatDeleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -20,11 +20,11 @@ class ChatCreated implements ShouldBroadcast
      * Create a new event instance.
      */
 
-    public $chat;
+    private $users;
 
-    public function __construct($chat)
+    public function __construct($users)
     {
-        $this->chat = $chat;
+        $this->users = $users;
     }
 
     /**
@@ -36,14 +36,14 @@ class ChatCreated implements ShouldBroadcast
     {
         $channels = [];
 
-        foreach ($this->chat->users as $user) {
-            array_push($channels, new Channel('user.' . $user->id));
+        foreach ($this->users as $user) {
+            array_push($channels, new Channel('user.' . $user));
         }
         return $channels;
     }
 
     public function broadcastAs()
     {
-        return 'new-chat';
+        return 'deleted-chat';
     }
 }

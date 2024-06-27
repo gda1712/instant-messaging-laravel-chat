@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ChatDeleted;
 use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -138,6 +139,8 @@ class ChatController extends BaseController
                     'type' => Message::TYPE_REMOVED_CHAT
                 ]);
             } else {
+                $chatUsers = $chat->users->pluck('id');
+                broadcast(new ChatDeleted($chatUsers));
                 $chat->delete();
             }
 
