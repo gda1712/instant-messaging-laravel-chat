@@ -10,6 +10,7 @@ until php -r "new PDO('mysql:host=' . getenv('DB_HOST') . ';dbname=' . getenv('D
 done
 
 # Run Laravel migrations
+composer install
 php artisan migrate
 
 # Start Supervisor
