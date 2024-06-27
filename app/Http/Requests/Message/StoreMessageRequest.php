@@ -23,7 +23,7 @@ class StoreMessageRequest extends BaseRequest
     {
         return [
             'file' => 'nullable|file|max:10240',
-            'message' => 'required_unless:file,null|string',
+            'message' => 'string',
             'chat_id' => 'required|integer|exists:chats,id',
         ];
     }
