@@ -68,7 +68,7 @@ class ChatController extends BaseController
                     $chat->name = $otherUser->name;
                 }
             }
-            broadcast(new ChatCreated($chat))->toOthers();
+            broadcast(new ChatCreated($chat));
             return $this->sendResponse($chat, 'chat created successfully.');
         } catch (\Exception $e) {
             return $this->sendError('Error', ['error' => $e->getMessage()], 500);

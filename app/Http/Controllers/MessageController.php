@@ -66,7 +66,7 @@ class MessageController extends BaseController
                 $newEncryptionService = new EncryptionService($user->email);
                 $messageForUser['message'] = $newEncryptionService->cryptoJsAesEncrypt($message->message);
 
-                broadcast(new NewMessage($messageForUser, $user))->toOthers();
+                broadcast(new NewMessage($messageForUser, $user));
             }
 
             $message->message = $encryptionService->cryptoJsAesEncrypt($message->message);
