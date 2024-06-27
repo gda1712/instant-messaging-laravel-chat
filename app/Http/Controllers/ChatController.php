@@ -7,7 +7,7 @@ use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BaseController;
-use App\Http\Requests\chat\StoreChatRequest;
+use App\Http\Requests\Chat\StoreChatRequest;
 use App\Http\Requests\Chat\updateChatStatusRequest;
 use App\Models\Chat;
 use App\Models\User;
